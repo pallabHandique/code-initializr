@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="fragments/logged_fragments :: logged-head-common('CodeInitializr | Contributor')"></th:block>
+    <th:block th:replace="fragments/logged_fragments :: logged-css"></th:block>
+</head>
+
+<body>
+    <header th:replace="fragments/logged_fragments :: logged-header"></header>
+    <div class="page-content py-5">
+        <section class="options-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-8 text-capitalize">
+                        <h4>
+                            <strong>
+                                <i class="fas fa-list"></i> 
+                                <span class="text-uppercase text-success" th:text="${subTopicData.currentObject == null ? 'TOPICS HOME' : subTopicData.currentObject.name}"></span>
+                            </strong>
+                        </h4>
+                        <small>
+                            <a th:href="@{/contributor}"><i class="fas fa-home"></i> Home</a>
+                            /
+                            <a th:href="@{/contributor/topic}">Topics</a>
+                            <span th:if="${not #lists.isEmpty(subTopicData.breadcrumbList)}">
+                                <span th:each="breadcrumb : ${subTopicData.breadcrumbList}"> / <a  th:href="@{/contributor/topic/__${breadcrumb.slug}__}" th:text="${breadcrumb.title}"></a></span>
+                            </span>
+                            <span th:if="${subTopicData.currentObject != null}"> / <a   th:text="${subTopicData.currentObject.name}"></a></span>
+                        </small>
+                    </div>
+                    <div class="col-4">
+                        <a th:href="@{/contributor/topic/__${subTopicData.currentObject.slug}__/create-article}" th:if="${subTopicData.currentObject != null}" class="btn btn-success w-100"><i class="fas fa-plus"></i> Create Article</a>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-12 mb-5 mt-5" th:if="${#lists.isEmpty(subTopicData.objectList) && #lists.isEmpty(subTopicData.objectList2)}">
+                        <h1 class="text-danger text-center">
+                            OOPS!
+                        </h1>
+                        <h5 class="text-center">
+                            NO SUB TOPIC FOUND
+                        </h5>
+                    </div>
+                    <div class="col-12 col-lg-12 " th:if="${not #lists.isEmpty(subTopicData.objectList)}">
+                        <div class="table-responsive my-4">
+                            <h2>TOPICS</h2>
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr th:each="topic, iterator : ${subTopicData.objectList}">
+                                        <th class="theme-bg-light" th:text="${'TOPIC '+iterator.count}" width="10%"></th>
+                                        <td width="90%">
+                                            <a th:href="@{/contributor/topic/__${topic.slug}__}"><span class="text-uppercase" th:text="${topic.name}"></span></a><br>
+                                            <small class="text-capitalize" th:text="${topic.description}"></small>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-12 mb-5" th:if="${not #lists.isEmpty(subTopicData.objectList2)}">
+                        <div class="table-responsive my-4">
+                            <h2>ARTICLES</h2>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Sl No.</th>
+                                        <th>Title</th>
+                                        <th colspan="2" class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="article, iterator : ${subTopicData.objectList2}">
+                                        <th th:text="${'ARTICLE '+iterator.count}" width="10%"></th>
+                                        <td>
+                                            <a><span th:text="${article.title}"></span></a><br>
+                                        </td>
+                                        <td class="text-center">
+                                            <a th:href="@{/contributor/topic/__${article.transTopic.slug}__/update-article/__${article.slug}__}" class="text-success"><strong>EDIT</strong></a>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong><a href="#" class="text-danger delete-article" th:attr="data-article-id=${article.articleId}">DELETE</a></strong>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer th:replace="fragments/logged_fragments :: logged-footer"></footer>
+    <!-- LOGGED JS -->
+    <th:block th:replace="fragments/logged_fragments :: logged-js-scripts"></th:block>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+    <!-- CONTRIBUTOR CUSTOM JS -->
+    <script th:replace="fragments/contributor_fragments :: contributor-custom-js"></script>
+
+    <script>
+        // ON ARTICLE DELETE
+        $(document).on('click', '.delete-article', function(e) {
+            e.preventDefault();
+            var ajax_return;
+            let articleId = e.target.dataset.articleId;
+            console.log(e);
+            $.confirm({
+                title: 'Warning!',
+                content: "Are you sure you want to delete the article.",
+                type: 'red',
+                typeAnimated: true,
+                buttons: {
+                    confirm: function() {
+                        $.confirm({
+                            content: function() {
+                                var self = this;
+                                return ajax_return = $.ajax({
+                                    type: "PUT",
+                                    url: contextPath + "contributor/delete-article",
+                                    data: {
+                                        "articleId": articleId
+                                    },
+                                }).done(function(response) {
+                                    self.setTitle("Success!");
+                                    self.setType("green");
+                                    self.setContent(response.message);
+                                }).fail(function(e) {
+                                    self.setTitle(e.responseJSON.httpStatus);
+                                    self.setType("red");
+                                    self.setContent("ERROR");
+                                })
+                                return true;
+                            },
+                            buttons: {
+                                ok: function() {
+                                    ajax_return.done(function(message) {
+                                        window.location.reload();
+                                    })
+                                }
+                            }
+                        });
+                    },
+                    cancel: function() {}
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

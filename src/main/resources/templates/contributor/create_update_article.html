@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="fragments/logged_fragments :: logged-head-common('CodeInitializr | Contributor')"></th:block>
+    <th:block th:replace="fragments/logged_fragments :: logged-css"></th:block>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-bs4.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+</head>
+
+<body>
+    <header th:replace="fragments/logged_fragments :: logged-header"></header>
+    <div class="page-content py-5">
+        <section class="options-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-8 text-capitalize">
+                        <h4>
+                            <strong>
+                                <i class="fas fa-list"></i> 
+                                <span class="text-uppercase text-success" th:text="${page_purpose}"></span>
+                            </strong>
+                        </h4>
+                        <small>
+                            <a th:href="@{/contributor}"><i class="fas fa-home"></i> Home</a>
+                            /<a th:href="@{/contributor/topic}">Topics</a>
+                            <span th:if="${not #lists.isEmpty(topicData.breadcrumbList)}">
+                                <span th:each="breadcrumb : ${topicData.breadcrumbList}"> / <a  th:href="@{/contributor/topic/__${breadcrumb.slug}__}" th:text="${breadcrumb.title}"></a></span>
+                            </span>
+                            <span th:if="${topicData.currentObject != null}"> / <a th:href="@{/contributor/topic/__${topicData.currentObject.slug}__}" th:text="${topicData.currentObject.name}"></a></span>
+                            / <a th:text="${page_purpose}"></a>
+                        </small>
+                    </div>
+                    <div class="col-4">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-lg-12 mb-5 mt-5">
+                        <form id="form-article">
+                            <div><input type="hidden" name="articleId"></div>
+                            <div class="form-group row">
+                                <label for="title" class="col-sm-2 col-form-label">Title</label>
+                                <div class="col-sm-10">
+                                    <input type="text" name="title" class="form-control" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="description" class="col-sm-2 col-form-label">Description</label>
+                                <div class="col-sm-10">
+                                    <textarea type="text" name="description" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="description" class="col-sm-2 col-form-label">Content</label>
+                                <div class="col-sm-10">
+                                    <textarea type="text" name="content" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-2">Parent Topic</div>
+                                <div class="col-sm-10">
+                                    <select name="transTopic" class="custom-select mr-sm-2">
+                                        <option th:each="topic, iterator : ${topicData.objectList}" th:value="${topic.topicId}" th:text="${topic.name}" th:selected="${topic.topicId == topicData.currentObject.topicId }" class="text-uppercase"></option>
+                                      </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-2">Visible to</div>
+                                <div class="col-sm-10">
+                                    <select name="visibleTo" class="custom-select mr-sm-2">
+                                        <option value="Contributor">Me</option>
+                                        <option value="Public">Public</option>
+                                      </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="inputEmail3" class="col-sm-2 col-form-label">Display Order</label>
+                                <div class="col-sm-10">
+                                    <input type="number" name="displayOrder" class="form-control" placeholder="Please enter display order">
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="description" class="col-sm-2 col-form-label">Keywords</label>
+                                <div class="col-sm-10">
+                                    <textarea type="text" name="keywords" class="form-control"></textarea>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-sm-3 offset-9">
+                                    <button type="button" class="btn btn-primary pull-right w-100" onclick="$('#form-article').submit()">Save the article</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer th:replace="fragments/logged_fragments :: logged-footer"></footer>
+    <!-- LOGGED JS -->
+    <th:block th:replace="fragments/logged_fragments :: logged-js-scripts"></th:block>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-form-validator/2.3.26/jquery.form-validator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote-bs4.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
+    <!-- ADMIN CUSTOM JS -->
+    <script th:replace="fragments/contributor_fragments :: contributor-custom-js"></script>
+    <script>
+        $(document).ready(function() {
+            // Initialize summernote
+            $('[name=content]').summernote();
+        });
+    </script>
+    <script>
+        // ON TOPIC FORM SUBMIT
+        $(document).on('submit', '#form-article', function(e) {
+            e.preventDefault();
+            var form = $('#form-article')[0]; // You need to use standard javascript object here
+            var formData = new FormData(form);
+            formData.set("content", encodeURIComponent($('[name=content]').val()));
+            var ajax_return;
+            $.confirm({
+                title: 'Warning!',
+                content: "Are you sure you want to submit the form.",
+                type: 'blue',
+                typeAnimated: true,
+                buttons: {
+                    confirm: function() {
+                        $.confirm({
+                            content: function() {
+                                var self = this;
+                                return ajax_return = $.ajax({
+                                    type: "POST",
+                                    url: contextPath + "contributor/create-article",
+                                    data: formData,
+                                    contentType: false, // NEEDED, DON'T OMIT THIS (requires jQuery 1.6+)
+                                    processData: false,
+                                }).done(function(response) {
+                                    self.setTitle("Success!");
+                                    self.setType("green");
+                                    self.setContent(response.message);
+                                }).fail(function(e) {
+                                    if (e.responseJSON.httpStatus === 'BAD_REQUEST' && e.responseJSON.errorMessages != null) {
+                                        $.each(e.responseJSON.errorMessages, function(key, value) {
+                                            $('#form-article').contents().find("[name='" + key + "']").after('<span class="error">' + value + '</span>');
+                                        });
+
+                                        self.setTitle(e.responseJSON.httpStatus);
+                                        self.setType("red");
+                                        self.setContent("VALIDATION ERROR");
+                                    } else {
+                                        self.setTitle(e.responseJSON.httpStatus);
+                                        self.setType("red");
+                                        self.setContent("ERROR");
+                                    }
+                                })
+                                return true;
+                            },
+                            buttons: {
+                                ok: function() {
+                                    ajax_return.done(function(message) {
+                                        window.location.reload();
+                                    })
+                                }
+                            }
+                        });
+                    },
+                    cancel: function() {}
+                }
+            });
+        });
+    </script>
+
+    <script th:inline="javascript" th:if="${page_purpose == 'UPDATE ARTICLE'}">
+        /*<![CDATA[*/
+        $('#form-article').contents().find("[name='articleId']").val( /*[[${topicData.currentObject2.articleId}]]*/ '');
+        $('#form-article').contents().find("[name='title']").val( /*[[${topicData.currentObject2.title}]]*/ '');
+        $('#form-article').contents().find("[name='description']").val( /*[[${topicData.currentObject2.description}]]*/ '');
+        $('#form-article').contents().find("[name='visibleTo']").val( /*[[${topicData.currentObject2.visibleTo}]]*/ '');
+        $('#form-article').contents().find("[name='displayOrder']").val( /*[[${topicData.currentObject2.displayOrder}]]*/ '');
+        $('#form-article').contents().find("[name='keywords']").val( /*[[${topicData.currentObject2.keywords}]]*/ '');
+        $('#form-article').contents().find("[name='content']").val(decodeURIComponent( /*[[${topicData.currentObject2.content}]]*/ ''));
+        /*]]>*/
+    </script>
+</body>
+
+</html>

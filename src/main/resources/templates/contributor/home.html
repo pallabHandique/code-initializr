@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <th:block th:replace="fragments/logged_fragments :: logged-head-common('CodeInitializr | Contributor')"></th:block>
+    <th:block th:replace="fragments/logged_fragments :: logged-css"></th:block>
+</head>
+
+<body>
+    <header th:replace="fragments/logged_fragments :: logged-header"></header>
+    <div class="page-content py-5">
+        <section class="options-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-lg-12 mb-5">
+                        <div class="media shadow-sm p-4 rounded h-100">
+                            <div class="theme-icon-holder mr-4"><i class="fas fa-user-edit text-success"></i></div>
+                            <div class="media-body">
+                                <h5 class="mt-0 text-success">Hey Contributor</h5>
+                                You are one of the few coders selected to contribute articles on CodeInitializr. So we expect you to create articles only on topics you are confident and experienced in. The articles and codes before publishing must be tested for any bugs and errors (syntactic,
+                                semantic and grammatical). Only codes in full working condition must be published. On failing to maintain the above standards your account might be temporarily or permanently banned depending on the severity.
+                                <br>Thanks and HAPPY CODING.
+                                <div class="row mt-5">
+                                    <div class="col-md-4">
+                                        <a th:href="@{/contributor/topic}" class="btn btn-success w-100"><i class="fas fa-list"></i> Articles</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <footer th:replace="fragments/logged_fragments :: logged-footer"></footer>
+    <!-- LOGGED JS -->
+    <span th:replace="fragments/logged_fragments :: logged-js-scripts"></span>
+    <!-- CONTRIBUTOR CUSTOM JS -->
+    <script th:replace="fragments/contributor_fragments :: contributor-custom-js"></script>
+</body>
+
+</html>
